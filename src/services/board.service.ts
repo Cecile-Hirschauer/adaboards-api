@@ -32,6 +32,8 @@ export class BoardService {
    * Récupérer un board par ID
    */
   async getBoard(boardId: string, userId: string) {
+    console.log('[BoardService.getBoard] Looking for board:', { boardId, userId });
+
     // Vérifier que l'utilisateur est membre du board
     const membership = await prisma.membership.findUnique({
       where: {
@@ -44,6 +46,8 @@ export class BoardService {
         board: true,
       },
     });
+
+    console.log('[BoardService.getBoard] Membership found:', membership ? 'YES' : 'NO');
 
     if (!membership) {
       throw new Error('Board not found or access denied');
