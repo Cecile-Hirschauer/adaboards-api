@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '../generated/prisma';
+import authRoutes from './routes/auth.routes';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -16,6 +17,9 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
 
 // Start server
 app.listen(PORT, () => {
