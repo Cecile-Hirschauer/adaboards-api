@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MAINTAINER
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+model User {
+  id              String       @id @default(uuid())
+  email           String       @unique
+  name            String
+  password        String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  memberships     Membership[]
+  createdTasks    Task[]       @relation("TaskCreator")
+  assignedTasks   Task[]       @relation("TaskAssignee")
+}
+
+model Board {
+  id          String       @id @default(uuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  memberships Membership[]
+  tasks       Task[]
+}
+
+model Membership {
+  id       String   @id @default(uuid())
+  userId   String
+  boardId  String
+  role     Role     @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board    Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, boardId])
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  boardId     String
+  createdBy   String
+  assignedTo  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  board       Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  creator     User       @relation("TaskCreator", fields: [createdBy], references: [id])
+  assignee    User?      @relation("TaskAssignee", fields: [assignedTo], references: [id])
+}
