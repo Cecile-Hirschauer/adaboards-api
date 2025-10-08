@@ -3,6 +3,7 @@ import cors from 'cors';
 import { PrismaClient } from '../generated/prisma';
 import authRoutes from './routes/auth.routes';
 import boardRoutes from './routes/board.routes';
+import taskRoutes from './routes/task.routes';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -27,6 +28,7 @@ app.get('/health', (req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);
+app.use('/api/boards', taskRoutes); // Task routes are nested under /api/boards/:boardId/tasks
 
 // Start server
 app.listen(PORT, () => {
