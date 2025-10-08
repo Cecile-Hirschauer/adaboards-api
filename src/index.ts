@@ -1,3 +1,4 @@
+import './types/express'; // Load Express type extensions
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '../generated/prisma';
@@ -27,8 +28,8 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/boards', boardRoutes);
-app.use('/api/boards', taskRoutes); // Task routes are nested under /api/boards/:boardId/tasks
+app.use('/api/boards', boardRoutes); // Board routes: /api/boards, /api/boards/:id
+app.use('/api/boards/:boardId/tasks', taskRoutes); // Task routes imbriquées
 
 // Start server
 app.listen(PORT, () => {
