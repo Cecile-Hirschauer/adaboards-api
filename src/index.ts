@@ -31,8 +31,8 @@ app.get('/health', (req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes); // Board routes: /api/boards, /api/boards/:id
+app.use('/api', membershipRoutes); // Membership routes: /api/boards/:boardId/members (must be before tasks)
 app.use('/api/boards/:boardId/tasks', taskRoutes); // Task routes imbriquées
-app.use('/api', membershipRoutes); // Membership routes: /api/boards/:boardId/members
 app.use('/api/users', userRoutes); // User routes: /api/users/search
 
 // Start server
