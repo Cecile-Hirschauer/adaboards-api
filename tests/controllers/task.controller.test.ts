@@ -3,6 +3,7 @@ import { TaskController } from '../../src/controllers/task.controller';
 import { taskService } from '../../src/services/task.service';
 import { Request, Response } from 'express';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../../src/errors';
+import { TaskStatus } from '../../generated/prisma';
 
 // Mock task service
 vi.mock('../../src/services/task.service', () => ({
@@ -51,7 +52,7 @@ describe('TaskController', () => {
           id: 'task-1',
           title: 'Task 1',
           description: 'Description',
-          status: 'TODO',
+          status: TaskStatus.TODO,
           boardId: 'board-1',
           createdBy: 'user-1',
           assignedTo: null,
@@ -99,7 +100,7 @@ describe('TaskController', () => {
         id: 'task-1',
         title: 'New Task',
         description: 'Description',
-        status: 'TODO',
+        status: TaskStatus.TODO,
         boardId: 'board-1',
         createdBy: 'user-1',
         assignedTo: null,
@@ -173,7 +174,7 @@ describe('TaskController', () => {
         id: 'task-1',
         title: 'Trimmed Task',
         description: 'Trimmed Description',
-        status: 'TODO',
+        status: TaskStatus.TODO,
         boardId: 'board-1',
         createdBy: 'user-1',
         assignedTo: null,
@@ -204,7 +205,7 @@ describe('TaskController', () => {
         id: 'task-1',
         title: 'Updated Task',
         description: null,
-        status: 'DONE',
+        status: TaskStatus.DONE,
         boardId: 'board-1',
         createdBy: 'user-1',
         assignedTo: null,
