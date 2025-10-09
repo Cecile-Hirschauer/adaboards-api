@@ -126,6 +126,8 @@ export class BoardService {
    * Supprimer un board
    */
   async deleteBoard(boardId: string, userId: string) {
+    console.log('[BoardService.deleteBoard] Attempting to delete board:', { boardId, userId });
+
     // Vérifier que l'utilisateur est OWNER
     const membership = await prisma.membership.findUnique({
       where: {
@@ -135,6 +137,8 @@ export class BoardService {
         },
       },
     });
+
+    console.log('[BoardService.deleteBoard] Membership found:', membership);
 
     if (!membership) {
       throw new NotFoundError('Board not found or access denied');
@@ -148,6 +152,8 @@ export class BoardService {
     await prisma.board.delete({
       where: { id: boardId },
     });
+
+    console.log('[BoardService.deleteBoard] Board deleted successfully');
   }
 }
 
