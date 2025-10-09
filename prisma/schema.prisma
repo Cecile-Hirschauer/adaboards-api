@@ -21,23 +21,23 @@ enum TaskStatus {
 }
 
 model User {
-  id              String       @id @default(uuid())
-  email           String       @unique
-  name            String
-  password        String
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  memberships     Membership[]
-  createdTasks    Task[]       @relation("TaskCreator")
-  assignedTasks   Task[]       @relation("TaskAssignee")
+  memberships   Membership[]
+  createdTasks  Task[]       @relation("TaskCreator")
+  assignedTasks Task[]       @relation("TaskAssignee")
 }
 
 model Board {
-  id          String       @id @default(uuid())
-  name        String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   memberships Membership[]
   tasks       Task[]
@@ -50,8 +50,8 @@ model Membership {
   role     Role     @default(MEMBER)
   joinedAt DateTime @default(now())
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  board    Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   @@unique([userId, boardId])
 }
@@ -67,7 +67,7 @@ model Task {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  board       Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  creator     User       @relation("TaskCreator", fields: [createdBy], references: [id])
-  assignee    User?      @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  board    Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  creator  User  @relation("TaskCreator", fields: [createdBy], references: [id])
+  assignee User? @relation("TaskAssignee", fields: [assignedTo], references: [id])
 }

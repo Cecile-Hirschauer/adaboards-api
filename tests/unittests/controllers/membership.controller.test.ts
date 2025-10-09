@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MembershipController } from '../../src/controllers/membership.controller';
-import { membershipService } from '../../src/services/membership.service';
+import { MembershipController } from '../../../src/controllers/membership.controller';
+import { membershipService } from '../../../src/services/membership.service';
 import { Request, Response } from 'express';
+import { NotFoundError, ForbiddenError, ConflictError } from '../../../src/errors';
+import { Role } from '../../../generated/prisma';
 
 // Mock membership service
-vi.mock('../../src/services/membership.service', () => ({
+vi.mock('../../../src/services/membership.service', () => ({
   membershipService: {
     getBoardMembers: vi.fn(),
     addMember: vi.fn(),
@@ -53,7 +55,7 @@ describe('MembershipController', () => {
           id: 'membership-1',
           userId: 'user-1',
           boardId: 'board-1',
-          role: 'OWNER',
+          role: Role.OWNER,
           joinedAt: '2024-01-01T00:00:00.000Z',
           user: { id: 'user-1', email: 'owner@test.com', name: 'Owner', createdAt: '2024-01-01T00:00:00.000Z' },
         },
@@ -61,7 +63,7 @@ describe('MembershipController', () => {
           id: 'membership-2',
           userId: 'user-2',
           boardId: 'board-1',
-          role: 'MEMBER',
+          role: Role.MEMBER,
           joinedAt: '2024-01-02T00:00:00.000Z',
           user: { id: 'user-2', email: 'member@test.com', name: 'Member', createdAt: '2024-01-02T00:00:00.000Z' },
         },
@@ -88,7 +90,7 @@ describe('MembershipController', () => {
 
     it('should return 404 if board not found or access denied', async () => {
       mockRequest.params = { boardId: 'board-1' };
-      vi.mocked(membershipService.getBoardMembers).mockRejectedValue(new Error('Board not found or access denied'));
+      vi.mocked(membershipService.getBoardMembers).mockRejectedValue(new NotFoundError('Board not found or access denied'));
 
       await membershipController.getBoardMembers(mockRequest as Request, mockResponse as Response);
 
@@ -105,7 +107,7 @@ describe('MembershipController', () => {
         id: 'membership-2',
         userId: 'user-2',
         boardId: 'board-1',
-        role: 'MEMBER',
+        role: Role.MEMBER,
         joinedAt: '2024-01-10T00:00:00.000Z',
         user: { id: 'user-2', email: 'new@test.com', name: 'New User', createdAt: '2024-01-10T00:00:00.000Z' },
       };
@@ -126,7 +128,7 @@ describe('MembershipController', () => {
         id: 'membership-2',
         userId: 'user-2',
         boardId: 'board-1',
-        role: 'MEMBER',
+        role: Role.MEMBER,
         joinedAt: '2024-01-10T00:00:00.000Z',
         user: { id: 'user-2', email: 'new@test.com', name: 'New User', createdAt: '2024-01-10T00:00:00.000Z' },
       };
@@ -164,7 +166,7 @@ describe('MembershipController', () => {
       mockRequest.params = { boardId: 'board-1' };
       mockRequest.body = { userId: 'user-2', role: 'MEMBER' };
       vi.mocked(membershipService.addMember).mockRejectedValue(
-        new Error('Only owners and maintainers can add members')
+        new ForbiddenError('Only owners and maintainers can add members')
       );
 
       await membershipController.addMember(mockRequest as Request, mockResponse as Response);
@@ -177,7 +179,7 @@ describe('MembershipController', () => {
       mockRequest.params = { boardId: 'board-1' };
       mockRequest.body = { userId: 'user-2', role: 'MEMBER' };
       vi.mocked(membershipService.addMember).mockRejectedValue(
-        new Error('User is already a member of this board')
+        new ConflictError('User is already a member of this board')
       );
 
       await membershipController.addMember(mockRequest as Request, mockResponse as Response);
@@ -195,7 +197,7 @@ describe('MembershipController', () => {
         id: 'membership-2',
         userId: 'user-2',
         boardId: 'board-1',
-        role: 'MAINTAINER',
+        role: Role.MAINTAINER,
         joinedAt: '2024-01-10T00:00:00.000Z',
         user: { id: 'user-2', email: 'user@test.com', name: 'User', createdAt: '2024-01-10T00:00:00.000Z' },
       };
@@ -223,7 +225,7 @@ describe('MembershipController', () => {
       mockRequest.params = { boardId: 'board-1', userId: 'user-2' };
       mockRequest.body = { role: 'MEMBER' };
       vi.mocked(membershipService.updateMemberRole).mockRejectedValue(
-        new Error('Cannot change the role of the last owner')
+        new ForbiddenError('Cannot change the role of the last owner')
       );
 
       await membershipController.updateMemberRole(mockRequest as Request, mockResponse as Response);
@@ -247,7 +249,7 @@ describe('MembershipController', () => {
 
     it('should return 403 if trying to remove last owner', async () => {
       mockRequest.params = { boardId: 'board-1', userId: 'user-1' };
-      vi.mocked(membershipService.removeMember).mockRejectedValue(new Error('Cannot remove the last owner'));
+      vi.mocked(membershipService.removeMember).mockRejectedValue(new ForbiddenError('Cannot remove the last owner'));
 
       await membershipController.removeMember(mockRequest as Request, mockResponse as Response);
 
@@ -268,25 +270,27 @@ describe('MembershipController', () => {
 
       await membershipController.searchUsers(mockRequest as Request, mockResponse as Response);
 
-      expect(membershipService.searchUsers).toHaveBeenCalledWith('test', 'user-1');
+      expect(membershipService.searchUsers).toHaveBeenCalledWith('test', 'user-1', 10);
       expect(jsonMock).toHaveBeenCalledWith(mockUsers);
     });
 
     it('should return empty array if query is too short', async () => {
       mockRequest.query = { q: 'a' };
+      vi.mocked(membershipService.searchUsers).mockResolvedValue([]);
 
       await membershipController.searchUsers(mockRequest as Request, mockResponse as Response);
 
-      expect(membershipService.searchUsers).not.toHaveBeenCalled();
+      expect(membershipService.searchUsers).toHaveBeenCalledWith('a', 'user-1', 10);
       expect(jsonMock).toHaveBeenCalledWith([]);
     });
 
     it('should return empty array if query is missing', async () => {
       mockRequest.query = {};
+      vi.mocked(membershipService.searchUsers).mockResolvedValue([]);
 
       await membershipController.searchUsers(mockRequest as Request, mockResponse as Response);
 
-      expect(membershipService.searchUsers).not.toHaveBeenCalled();
+      expect(membershipService.searchUsers).toHaveBeenCalledWith(undefined, 'user-1', 10);
       expect(jsonMock).toHaveBeenCalledWith([]);
     });
 

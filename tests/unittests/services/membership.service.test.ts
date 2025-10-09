@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MembershipService } from '../../src/services/membership.service';
-import { PrismaClient, Role } from '../../generated/prisma';
+import { MembershipService } from '../../../src/services/membership.service';
+import { PrismaClient, Role } from '../../../generated/prisma';
 
 // Mock Prisma Client
-vi.mock('../../generated/prisma', () => {
+vi.mock('../../../generated/prisma', () => {
   const mockPrismaClient = {
     membership: {
       findMany: vi.fn(),
@@ -309,8 +309,8 @@ describe('MembershipService', () => {
             { id: { not: currentUserId } },
             {
               OR: [
-                { email: { contains: query, mode: 'insensitive' } },
-                { name: { contains: query, mode: 'insensitive' } },
+                { email: { contains: query } },
+                { name: { contains: query } },
               ],
             },
           ],

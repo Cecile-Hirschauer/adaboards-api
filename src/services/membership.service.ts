@@ -1,4 +1,5 @@
 import { PrismaClient, Role } from '../../generated/prisma';
+import { NotFoundError, ForbiddenError, ConflictError } from '../errors';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ export class MembershipService {
     });
 
     if (!membership) {
-      throw new Error('Board not found or access denied');
+      throw new NotFoundError('Board not found or access denied');
     }
 
     // Récupérer tous les membres du board avec les infos utilisateur
@@ -73,7 +74,7 @@ export class MembershipService {
     }
 
     if (currentMembership.role === 'MEMBER') {
-      throw new Error('Only owners and maintainers can add members');
+      throw new ForbiddenError('Only owners and maintainers can add members');
     }
 
     // Vérifier que l'utilisateur cible existe
@@ -82,7 +83,7 @@ export class MembershipService {
     });
 
     if (!targetUser) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     // Vérifier que l'utilisateur n'est pas déjà membre
@@ -96,7 +97,7 @@ export class MembershipService {
     });
 
     if (existingMembership) {
-      throw new Error('User is already a member of this board');
+      throw new ConflictError('User is already a member of this board');
     }
 
     // Créer le membership
@@ -152,7 +153,7 @@ export class MembershipService {
     }
 
     if (currentMembership.role === 'MEMBER') {
-      throw new Error('Only owners and maintainers can update member roles');
+      throw new ForbiddenError('Only owners and maintainers can update member roles');
     }
 
     // Vérifier que le membre cible existe
@@ -166,7 +167,7 @@ export class MembershipService {
     });
 
     if (!targetMembership) {
-      throw new Error('Member not found');
+      throw new NotFoundError('Member not found');
     }
 
     // Empêcher de changer le rôle du dernier OWNER
@@ -179,7 +180,7 @@ export class MembershipService {
       });
 
       if (ownerCount === 1) {
-        throw new Error('Cannot change the role of the last owner');
+        throw new ForbiddenError('Cannot change the role of the last owner');
       }
     }
 
@@ -240,7 +241,7 @@ export class MembershipService {
     }
 
     if (currentMembership.role === 'MEMBER') {
-      throw new Error('Only owners and maintainers can remove members');
+      throw new ForbiddenError('Only owners and maintainers can remove members');
     }
 
     // Vérifier que le membre cible existe
@@ -254,7 +255,7 @@ export class MembershipService {
     });
 
     if (!targetMembership) {
-      throw new Error('Member not found');
+      throw new NotFoundError('Member not found');
     }
 
     // Empêcher de retirer le dernier OWNER
@@ -267,7 +268,7 @@ export class MembershipService {
       });
 
       if (ownerCount === 1) {
-        throw new Error('Cannot remove the last owner');
+        throw new ForbiddenError('Cannot remove the last owner');
       }
     }
 

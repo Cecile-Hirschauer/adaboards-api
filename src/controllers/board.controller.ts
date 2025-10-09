@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { boardService } from '../services/board.service';
+import { UnauthorizedError, BadRequestError } from '../errors';
+import { mapError } from '../utils/http';
 
 export class BoardController {
   /**
@@ -11,14 +13,17 @@ export class BoardController {
       const userId = req.user?.id;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       const boards = await boardService.getUserBoards(userId);
-      res.json(boards);
+      return res.json(boards);
     } catch (error) {
-      console.error('Error fetching boards:', error);
-      res.status(500).json({ error: 'Failed to fetch boards' });
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error fetching boards:', error);
+      }
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -32,16 +37,17 @@ export class BoardController {
       const boardId = req.params.id;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       const board = await boardService.getBoard(boardId, userId);
-      res.json(board);
+      return res.json(board);
     } catch (error) {
-      console.error('Error fetching board:', error);
-      const message = error instanceof Error ? error.message : 'Failed to fetch board';
-      const status = message.includes('not found') || message.includes('access denied') ? 404 : 500;
-      res.status(status).json({ error: message });
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error fetching board:', error);
+      }
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -55,18 +61,21 @@ export class BoardController {
       const { name } = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        return res.status(400).json({ error: 'Board name is required' });
+        throw new BadRequestError('Board name is required');
       }
 
       const board = await boardService.createBoard(name.trim(), userId);
-      res.status(201).json(board);
+      return res.status(201).json(board);
     } catch (error) {
-      console.error('Error creating board:', error);
-      res.status(500).json({ error: 'Failed to create board' });
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error creating board:', error);
+      }
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -81,21 +90,21 @@ export class BoardController {
       const { name } = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        return res.status(400).json({ error: 'Board name is required' });
+        throw new BadRequestError('Board name is required');
       }
 
       const board = await boardService.updateBoard(boardId, userId, { name: name.trim() });
-      res.json(board);
+      return res.json(board);
     } catch (error) {
-      console.error('Error updating board:', error);
-      const message = error instanceof Error ? error.message : 'Failed to update board';
-      const status = message.includes('not found') || message.includes('access denied') ? 404 :
-                     message.includes('Only owners') ? 403 : 500;
-      res.status(status).json({ error: message });
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error updating board:', error);
+      }
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -109,17 +118,17 @@ export class BoardController {
       const boardId = req.params.id;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       await boardService.deleteBoard(boardId, userId);
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
-      console.error('Error deleting board:', error);
-      const message = error instanceof Error ? error.message : 'Failed to delete board';
-      const status = message.includes('not found') || message.includes('access denied') ? 404 :
-                     message.includes('Only owners') ? 403 : 500;
-      res.status(status).json({ error: message });
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error deleting board:', error);
+      }
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 }

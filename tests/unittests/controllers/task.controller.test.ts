@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TaskController } from '../../src/controllers/task.controller';
-import { taskService } from '../../src/services/task.service';
+import { TaskController } from '../../../src/controllers/task.controller';
+import { taskService } from '../../../src/services/task.service';
 import { Request, Response } from 'express';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../../../src/errors';
+import { TaskStatus } from '../../../generated/prisma';
 
 // Mock task service
-vi.mock('../../src/services/task.service', () => ({
+vi.mock('../../../src/services/task.service', () => ({
   taskService: {
     getBoardTasks: vi.fn(),
     createTask: vi.fn(),
@@ -50,7 +52,7 @@ describe('TaskController', () => {
           id: 'task-1',
           title: 'Task 1',
           description: 'Description',
-          status: 'TODO',
+          status: TaskStatus.TODO,
           boardId: 'board-1',
           createdBy: 'user-1',
           assignedTo: null,
@@ -83,7 +85,7 @@ describe('TaskController', () => {
 
     it('should return 404 if board not found', async () => {
       mockRequest.params = { boardId: 'board-1' };
-      vi.mocked(taskService.getBoardTasks).mockRejectedValue(new Error('Board not found or access denied'));
+      vi.mocked(taskService.getBoardTasks).mockRejectedValue(new NotFoundError('Board not found or access denied'));
 
       await taskController.getTasks(mockRequest as Request, mockResponse as Response);
 
@@ -98,7 +100,7 @@ describe('TaskController', () => {
         id: 'task-1',
         title: 'New Task',
         description: 'Description',
-        status: 'TODO',
+        status: TaskStatus.TODO,
         boardId: 'board-1',
         createdBy: 'user-1',
         assignedTo: null,
@@ -172,7 +174,7 @@ describe('TaskController', () => {
         id: 'task-1',
         title: 'Trimmed Task',
         description: 'Trimmed Description',
-        status: 'TODO',
+        status: TaskStatus.TODO,
         boardId: 'board-1',
         createdBy: 'user-1',
         assignedTo: null,
@@ -203,7 +205,7 @@ describe('TaskController', () => {
         id: 'task-1',
         title: 'Updated Task',
         description: null,
-        status: 'DONE',
+        status: TaskStatus.DONE,
         boardId: 'board-1',
         createdBy: 'user-1',
         assignedTo: null,
@@ -261,7 +263,7 @@ describe('TaskController', () => {
     it('should return 404 if task not found', async () => {
       mockRequest.params = { boardId: 'board-1', taskId: 'task-1' };
       mockRequest.body = { title: 'Updated' };
-      vi.mocked(taskService.updateTask).mockRejectedValue(new Error('Task not found'));
+      vi.mocked(taskService.updateTask).mockRejectedValue(new NotFoundError('Task not found'));
 
       await taskController.updateTask(mockRequest as Request, mockResponse as Response);
 
@@ -293,7 +295,7 @@ describe('TaskController', () => {
 
     it('should return 403 if user cannot delete task', async () => {
       mockRequest.params = { boardId: 'board-1', taskId: 'task-1' };
-      vi.mocked(taskService.deleteTask).mockRejectedValue(new Error('Only task creator, owners and maintainers can delete tasks'));
+      vi.mocked(taskService.deleteTask).mockRejectedValue(new ForbiddenError('Only task creator, owners and maintainers can delete tasks'));
 
       await taskController.deleteTask(mockRequest as Request, mockResponse as Response);
 
@@ -303,7 +305,7 @@ describe('TaskController', () => {
 
     it('should return 404 if task not found', async () => {
       mockRequest.params = { boardId: 'board-1', taskId: 'task-1' };
-      vi.mocked(taskService.deleteTask).mockRejectedValue(new Error('Task not found'));
+      vi.mocked(taskService.deleteTask).mockRejectedValue(new NotFoundError('Task not found'));
 
       await taskController.deleteTask(mockRequest as Request, mockResponse as Response);
 
