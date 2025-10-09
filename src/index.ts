@@ -1,39 +1,8 @@
-import './types/express'; // Load Express type extensions
-import express, { Request, Response } from 'express';
-import cors from 'cors';
 import { PrismaClient } from '../generated/prisma';
-import authRoutes from './routes/auth.routes';
-import boardRoutes from './routes/board.routes';
-import taskRoutes from './routes/task.routes';
-import membershipRoutes from './routes/membership.routes';
-import userRoutes from './routes/user.routes';
+import app from './app';
 
-const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors({
-  origin: 'http://localhost:5173', // URL de votre app React (ajustez le port si nécessaire)
-  credentials: true
-}));
-app.use(express.json());
-
-// Routes
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Welcome to Adaboards API' });
-});
-
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/boards', boardRoutes); // Board routes: /api/boards, /api/boards/:id
-app.use('/api', membershipRoutes); // Membership routes: /api/boards/:boardId/members (must be before tasks)
-app.use('/api/boards/:boardId/tasks', taskRoutes); // Task routes imbriquées
-app.use('/api/users', userRoutes); // User routes: /api/users/search
 
 // Start server
 app.listen(PORT, () => {

@@ -11,6 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "test": "vitest",
+    "test:unit": "vitest tests/services tests/controllers",
+    "test:integration": "cross-env DATABASE_URL=\"file:./test.db\" vitest tests/integration",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"
   },
@@ -31,9 +33,13 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.7.0",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
+    "cross-env": "^10.1.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.17.0",
+    "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^5.1.4",
@@ -44,6 +50,7 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "jshint": "^2.13.6",
     "jsonwebtoken": "^9.0.2"
   }
 }

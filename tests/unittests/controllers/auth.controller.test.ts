@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AuthController } from '../../src/controllers/auth.controller';
-import { authService } from '../../src/services/auth.service';
+import { AuthController } from '../../../src/controllers/auth.controller';
+import { authService } from '../../../src/services/auth.service';
 import { Request, Response } from 'express';
 
 // Mock auth service
-vi.mock('../../src/services/auth.service', () => ({
+vi.mock('../../../src/services/auth.service', () => ({
   authService: {
     register: vi.fn(),
     login: vi.fn()

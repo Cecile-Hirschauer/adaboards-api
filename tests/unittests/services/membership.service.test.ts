@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MembershipService } from '../../src/services/membership.service';
-import { PrismaClient, Role } from '../../generated/prisma';
+import { MembershipService } from '../../../src/services/membership.service';
+import { PrismaClient, Role } from '../../../generated/prisma';
 
 // Mock Prisma Client
-vi.mock('../../generated/prisma', () => {
+vi.mock('../../../generated/prisma', () => {
   const mockPrismaClient = {
     membership: {
       findMany: vi.fn(),

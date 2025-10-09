@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BoardController } from '../../src/controllers/board.controller';
-import { boardService } from '../../src/services/board.service';
+import { BoardController } from '../../../src/controllers/board.controller';
+import { boardService } from '../../../src/services/board.service';
 import { Request, Response } from 'express';
-import { Role } from '../../generated/prisma';
-import { NotFoundError, ForbiddenError } from '../../src/errors';
+import { Role } from '../../../generated/prisma';
+import { NotFoundError, ForbiddenError } from '../../../src/errors';
 
 // Mock board service
-vi.mock('../../src/services/board.service', () => ({
+vi.mock('../../../src/services/board.service', () => ({
   boardService: {
     getUserBoards: vi.fn(),
     getBoard: vi.fn(),

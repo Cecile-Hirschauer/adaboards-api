@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AuthService } from '../../src/services/auth.service';
+import { AuthService } from '../../../src/services/auth.service';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '../../../generated/prisma';
 
 // Mock Prisma Client
-vi.mock('../../generated/prisma', () => {
+vi.mock('../../../generated/prisma', () => {
   const mockPrismaClient = {
     user: {
       findUnique: vi.fn(),
