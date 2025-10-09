@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TaskController } from '../../src/controllers/task.controller';
-import { taskService } from '../../src/services/task.service';
+import { TaskController } from '../../../src/controllers/task.controller';
+import { taskService } from '../../../src/services/task.service';
 import { Request, Response } from 'express';
-import { NotFoundError, ForbiddenError, BadRequestError } from '../../src/errors';
-import { TaskStatus } from '../../generated/prisma';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../../../src/errors';
+import { TaskStatus } from '../../../generated/prisma';
 
 // Mock task service
-vi.mock('../../src/services/task.service', () => ({
+vi.mock('../../../src/services/task.service', () => ({
   taskService: {
     getBoardTasks: vi.fn(),
     createTask: vi.fn(),

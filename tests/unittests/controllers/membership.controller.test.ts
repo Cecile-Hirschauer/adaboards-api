@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MembershipController } from '../../src/controllers/membership.controller';
-import { membershipService } from '../../src/services/membership.service';
+import { MembershipController } from '../../../src/controllers/membership.controller';
+import { membershipService } from '../../../src/services/membership.service';
 import { Request, Response } from 'express';
-import { NotFoundError, ForbiddenError, ConflictError } from '../../src/errors';
-import { Role } from '../../generated/prisma';
+import { NotFoundError, ForbiddenError, ConflictError } from '../../../src/errors';
+import { Role } from '../../../generated/prisma';
 
 // Mock membership service
-vi.mock('../../src/services/membership.service', () => ({
+vi.mock('../../../src/services/membership.service', () => ({
   membershipService: {
     getBoardMembers: vi.fn(),
     addMember: vi.fn(),

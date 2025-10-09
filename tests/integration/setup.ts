@@ -1,5 +1,5 @@
 import { PrismaClient } from '../../generated/prisma';
-import { beforeAll, afterAll, beforeEach } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 
 const prisma = new PrismaClient({
   datasources: {
@@ -9,17 +9,9 @@ const prisma = new PrismaClient({
   }
 });
 
-// Nettoyer et préparer la base de données avant tous les tests
+// Nettoyer avant tous les tests
 beforeAll(async () => {
   // Supprimer toutes les données existantes
-  await prisma.task.deleteMany();
-  await prisma.membership.deleteMany();
-  await prisma.board.deleteMany();
-  await prisma.user.deleteMany();
-});
-
-// Nettoyer après chaque test pour garantir l'isolation
-beforeEach(async () => {
   await prisma.task.deleteMany();
   await prisma.membership.deleteMany();
   await prisma.board.deleteMany();

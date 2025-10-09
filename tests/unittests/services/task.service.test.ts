@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TaskService } from '../../src/services/task.service';
-import { PrismaClient } from '../../generated/prisma';
+import { TaskService } from '../../../src/services/task.service';
+import { PrismaClient } from '../../../generated/prisma';
 
 // Mock Prisma Client
-vi.mock('../../generated/prisma', () => {
+vi.mock('../../../generated/prisma', () => {
   const mockPrismaClient = {
     membership: {
       findUnique: vi.fn(),
