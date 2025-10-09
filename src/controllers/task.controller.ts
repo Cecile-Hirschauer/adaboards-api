@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { taskService } from '../services/task.service';
 import { TaskStatus } from '../../generated/prisma';
+import { UnauthorizedError, BadRequestError } from '../errors';
+import { mapError } from '../utils/http';
 
 export class TaskController {
   /**
@@ -13,16 +15,15 @@ export class TaskController {
       const boardId = req.params.boardId;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       const tasks = await taskService.getBoardTasks(boardId, userId);
-      res.json(tasks);
+      return res.json(tasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      const message = error instanceof Error ? error.message : 'Failed to fetch tasks';
-      const status = message.includes('not found') || message.includes('access denied') ? 404 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -37,17 +38,17 @@ export class TaskController {
       const { title, description, status, assignedTo } = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       // Validation
       if (!title || typeof title !== 'string' || title.trim().length === 0) {
-        return res.status(400).json({ error: 'Task title is required' });
+        throw new BadRequestError('Task title is required');
       }
 
       // Valider le status si fourni
       if (status && !['TODO', 'IN_PROGRESS', 'DONE'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status. Must be TODO, IN_PROGRESS, or DONE' });
+        throw new BadRequestError('Invalid status. Must be TODO, IN_PROGRESS, or DONE');
       }
 
       const task = await taskService.createTask(boardId, userId, {
@@ -57,13 +58,11 @@ export class TaskController {
         assignedTo,
       });
 
-      res.status(201).json(task);
+      return res.status(201).json(task);
     } catch (error) {
       console.error('Error creating task:', error);
-      const message = error instanceof Error ? error.message : 'Failed to create task';
-      const status = message.includes('not found') || message.includes('access denied') ? 404 :
-                     message.includes('not a member') ? 400 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -78,17 +77,17 @@ export class TaskController {
       const { title, description, status, assignedTo } = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       // Validation du titre si fourni
       if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
-        return res.status(400).json({ error: 'Task title cannot be empty' });
+        throw new BadRequestError('Task title cannot be empty');
       }
 
       // Valider le status si fourni
       if (status && !['TODO', 'IN_PROGRESS', 'DONE'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status. Must be TODO, IN_PROGRESS, or DONE' });
+        throw new BadRequestError('Invalid status. Must be TODO, IN_PROGRESS, or DONE');
       }
 
       const updateData: any = {};
@@ -98,14 +97,11 @@ export class TaskController {
       if (assignedTo !== undefined) updateData.assignedTo = assignedTo;
 
       const task = await taskService.updateTask(boardId, taskId, userId, updateData);
-      res.json(task);
+      return res.json(task);
     } catch (error) {
       console.error('Error updating task:', error);
-      const message = error instanceof Error ? error.message : 'Failed to update task';
-      const status = message.includes('not found') ? 404 :
-                     message.includes('access denied') ? 403 :
-                     message.includes('not a member') ? 400 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -119,18 +115,15 @@ export class TaskController {
       const { boardId, taskId } = req.params;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       await taskService.deleteTask(boardId, taskId, userId);
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
       console.error('Error deleting task:', error);
-      const message = error instanceof Error ? error.message : 'Failed to delete task';
-      const status = message.includes('not found') ? 404 :
-                     message.includes('access denied') ? 403 :
-                     message.includes('can delete') ? 403 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 }

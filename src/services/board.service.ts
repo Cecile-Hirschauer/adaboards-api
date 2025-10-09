@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../generated/prisma';
+import { NotFoundError, ForbiddenError } from '../errors';
 
 const prisma = new PrismaClient();
 
@@ -50,7 +51,7 @@ export class BoardService {
     console.log('[BoardService.getBoard] Membership found:', membership ? 'YES' : 'NO');
 
     if (!membership) {
-      throw new Error('Board not found or access denied');
+      throw new NotFoundError('Board not found or access denied');
     }
 
     return {
@@ -100,11 +101,11 @@ export class BoardService {
     });
 
     if (!membership) {
-      throw new Error('Board not found or access denied');
+      throw new NotFoundError('Board not found or access denied');
     }
 
     if (membership.role === 'MEMBER') {
-      throw new Error('Only owners and maintainers can update boards');
+      throw new ForbiddenError('Only owners and maintainers can update boards');
     }
 
     const board = await prisma.board.update({
@@ -136,11 +137,11 @@ export class BoardService {
     });
 
     if (!membership) {
-      throw new Error('Board not found or access denied');
+      throw new NotFoundError('Board not found or access denied');
     }
 
     if (membership.role !== 'OWNER') {
-      throw new Error('Only owners can delete boards');
+      throw new ForbiddenError('Only owners can delete boards');
     }
 
     // Supprimer le board (cascade supprimera automatiquement les memberships et tasks)

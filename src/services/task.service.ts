@@ -1,4 +1,5 @@
 import { PrismaClient, TaskStatus } from '../../generated/prisma';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../errors';
 
 const prisma = new PrismaClient();
 
@@ -17,7 +18,7 @@ export class TaskService {
     });
 
     if (!membership) {
-      throw new Error('Board not found or access denied');
+      throw new NotFoundError('Board not found or access denied');
     }
 
     return membership;
@@ -96,7 +97,7 @@ export class TaskService {
       });
 
       if (!assigneeMembership) {
-        throw new Error('Assigned user is not a member of this board');
+        throw new BadRequestError('Assigned user is not a member of this board');
       }
     }
 
@@ -168,7 +169,7 @@ export class TaskService {
     });
 
     if (!existingTask) {
-      throw new Error('Task not found');
+      throw new NotFoundError('Task not found');
     }
 
     // Si assignedTo est fourni, vérifier que cet utilisateur est membre du board
@@ -184,7 +185,7 @@ export class TaskService {
         });
 
         if (!assigneeMembership) {
-          throw new Error('Assigned user is not a member of this board');
+          throw new BadRequestError('Assigned user is not a member of this board');
         }
       }
     }
@@ -246,7 +247,7 @@ export class TaskService {
     });
 
     if (!existingTask) {
-      throw new Error('Task not found');
+      throw new NotFoundError('Task not found');
     }
 
     // Seuls le créateur de la tâche, les OWNER et MAINTAINER peuvent supprimer
@@ -256,7 +257,7 @@ export class TaskService {
       membership.role === 'MAINTAINER';
 
     if (!canDelete) {
-      throw new Error('Only task creator, owners and maintainers can delete tasks');
+      throw new ForbiddenError('Only task creator, owners and maintainers can delete tasks');
     }
 
     await prisma.task.delete({

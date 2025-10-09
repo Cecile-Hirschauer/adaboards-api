@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { membershipService } from '../services/membership.service';
 import { Role } from '../../generated/prisma';
+import { UnauthorizedError, BadRequestError } from '../errors';
+import { mapError } from '../utils/http';
 
 export class MembershipController {
   /**
@@ -13,16 +15,15 @@ export class MembershipController {
       const boardId = req.params.boardId;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       const members = await membershipService.getBoardMembers(boardId, userId);
-      res.json(members);
+      return res.json(members);
     } catch (error) {
       console.error('Error fetching board members:', error);
-      const message = error instanceof Error ? error.message : 'Failed to fetch members';
-      const status = message.includes('not found') || message.includes('access denied') ? 404 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -37,30 +38,27 @@ export class MembershipController {
       const { userId: targetUserId, role } = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       // Validation
       if (!targetUserId || typeof targetUserId !== 'string') {
-        return res.status(400).json({ error: 'User ID is required' });
+        throw new BadRequestError('User ID is required');
       }
 
       // Valider le rôle
       const validRoles: Role[] = ['OWNER', 'MAINTAINER', 'MEMBER'];
       const memberRole = role || 'MEMBER';
       if (!validRoles.includes(memberRole)) {
-        return res.status(400).json({ error: 'Invalid role. Must be OWNER, MAINTAINER, or MEMBER' });
+        throw new BadRequestError('Invalid role. Must be OWNER, MAINTAINER, or MEMBER');
       }
 
       const member = await membershipService.addMember(boardId, userId, targetUserId, memberRole);
-      res.status(201).json(member);
+      return res.status(201).json(member);
     } catch (error) {
       console.error('Error adding member:', error);
-      const message = error instanceof Error ? error.message : 'Failed to add member';
-      const status = message.includes('not found') ? 404 :
-                     message.includes('access denied') || message.includes('Only owners') ? 403 :
-                     message.includes('already a member') ? 409 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -76,23 +74,21 @@ export class MembershipController {
       const { role } = req.body;
 
       if (!currentUserId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       // Validation du rôle
       const validRoles: Role[] = ['OWNER', 'MAINTAINER', 'MEMBER'];
       if (!role || !validRoles.includes(role)) {
-        return res.status(400).json({ error: 'Invalid role. Must be OWNER, MAINTAINER, or MEMBER' });
+        throw new BadRequestError('Invalid role. Must be OWNER, MAINTAINER, or MEMBER');
       }
 
       const member = await membershipService.updateMemberRole(boardId, currentUserId, targetUserId, role);
-      res.json(member);
+      return res.json(member);
     } catch (error) {
       console.error('Error updating member role:', error);
-      const message = error instanceof Error ? error.message : 'Failed to update member role';
-      const status = message.includes('not found') ? 404 :
-                     message.includes('access denied') || message.includes('Only owners') || message.includes('last owner') ? 403 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
@@ -107,42 +103,38 @@ export class MembershipController {
       const targetUserId = req.params.userId;
 
       if (!currentUserId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
       await membershipService.removeMember(boardId, currentUserId, targetUserId);
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
       console.error('Error removing member:', error);
-      const message = error instanceof Error ? error.message : 'Failed to remove member';
-      const status = message.includes('not found') ? 404 :
-                     message.includes('access denied') || message.includes('Only owners') || message.includes('last owner') ? 403 : 500;
-      res.status(status).json({ error: message });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 
   /**
-   * GET /api/users/search
-   * Rechercher des utilisateurs par email ou nom
+   * GET /api/search/users
+   * Rechercher des utilisateurs
    */
   async searchUsers(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
       const query = req.query.q as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
 
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new UnauthorizedError();
       }
 
-      if (!query || typeof query !== 'string' || query.trim().length < 2) {
-        return res.json([]);
-      }
-
-      const users = await membershipService.searchUsers(query.trim(), userId);
-      res.json(users);
+      const users = await membershipService.searchUsers(query, userId, limit);
+      return res.json(users);
     } catch (error) {
       console.error('Error searching users:', error);
-      res.status(500).json({ error: 'Failed to search users' });
+      const { status, body } = mapError(error);
+      return res.status(status).json(body);
     }
   }
 }

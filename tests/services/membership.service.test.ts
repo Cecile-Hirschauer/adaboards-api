@@ -309,8 +309,8 @@ describe('MembershipService', () => {
             { id: { not: currentUserId } },
             {
               OR: [
-                { email: { contains: query, mode: 'insensitive' } },
-                { name: { contains: query, mode: 'insensitive' } },
+                { email: { contains: query } },
+                { name: { contains: query } },
               ],
             },
           ],

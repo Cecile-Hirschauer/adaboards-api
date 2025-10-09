@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BoardController } from '../../src/controllers/board.controller';
 import { boardService } from '../../src/services/board.service';
 import { Request, Response } from 'express';
+import { Role } from '../../generated/prisma';
+import { NotFoundError, ForbiddenError } from '../../src/errors';
 
 // Mock board service
 vi.mock('../../src/services/board.service', () => ({
@@ -16,7 +18,7 @@ vi.mock('../../src/services/board.service', () => ({
 
 describe('BoardController', () => {
   let boardController: BoardController;
-  let mockRequest: Partial<Request>;
+  let mockRequest: Partial<Request> & { user?: { id: string; userId: string; email: string } };
   let mockResponse: Partial<Response>;
   let jsonMock: any;
   let statusMock: any;
@@ -32,7 +34,7 @@ describe('BoardController', () => {
     mockRequest = {
       body: {},
       params: {},
-      user: { id: 'user-1', email: 'test@example.com' }
+      user: { id: 'user-1', userId: 'user-1', email: 'test@example.com' }
     };
 
     mockResponse = {
@@ -47,8 +49,8 @@ describe('BoardController', () => {
   describe('getBoards', () => {
     it('should return all boards for authenticated user', async () => {
       const mockBoards = [
-        { id: 'board-1', name: 'Project A', updated_at: '2024-01-15T00:00:00.000Z', role: 'OWNER' },
-        { id: 'board-2', name: 'Project B', updated_at: '2024-01-20T00:00:00.000Z', role: 'MEMBER' }
+        { id: 'board-1', name: 'Project A', updated_at: '2024-01-15T00:00:00.000Z', role: Role.OWNER },
+        { id: 'board-2', name: 'Project B', updated_at: '2024-01-20T00:00:00.000Z', role: Role.MEMBER }
       ];
 
       vi.mocked(boardService.getUserBoards).mockResolvedValue(mockBoards);
@@ -75,7 +77,7 @@ describe('BoardController', () => {
       await boardController.getBoards(mockRequest as Request, mockResponse as Response);
 
       expect(statusMock).toHaveBeenCalledWith(500);
-      expect(jsonMock).toHaveBeenCalledWith({ error: 'Failed to fetch boards' });
+      expect(jsonMock).toHaveBeenCalledWith({ error: 'Internal server error' });
     });
   });
 
@@ -85,7 +87,7 @@ describe('BoardController', () => {
         id: 'board-1',
         name: 'My Board',
         updated_at: '2024-01-15T00:00:00.000Z',
-        role: 'OWNER'
+        role: Role.OWNER
       };
 
       mockRequest.params = { id: 'board-1' };
@@ -110,7 +112,7 @@ describe('BoardController', () => {
 
     it('should return 404 if board not found', async () => {
       mockRequest.params = { id: 'board-1' };
-      vi.mocked(boardService.getBoard).mockRejectedValue(new Error('Board not found or access denied'));
+      vi.mocked(boardService.getBoard).mockRejectedValue(new NotFoundError('Board not found or access denied'));
 
       await boardController.getBoard(mockRequest as Request, mockResponse as Response);
 
@@ -226,7 +228,7 @@ describe('BoardController', () => {
     it('should return 403 if user is not owner or maintainer', async () => {
       mockRequest.params = { id: 'board-1' };
       mockRequest.body = { name: 'Updated Name' };
-      vi.mocked(boardService.updateBoard).mockRejectedValue(new Error('Only owners and maintainers can update boards'));
+      vi.mocked(boardService.updateBoard).mockRejectedValue(new ForbiddenError('Only owners and maintainers can update boards'));
 
       await boardController.updateBoard(mockRequest as Request, mockResponse as Response);
 
@@ -237,7 +239,7 @@ describe('BoardController', () => {
     it('should return 404 if board not found', async () => {
       mockRequest.params = { id: 'board-1' };
       mockRequest.body = { name: 'Updated Name' };
-      vi.mocked(boardService.updateBoard).mockRejectedValue(new Error('Board not found or access denied'));
+      vi.mocked(boardService.updateBoard).mockRejectedValue(new NotFoundError('Board not found or access denied'));
 
       await boardController.updateBoard(mockRequest as Request, mockResponse as Response);
 
@@ -269,7 +271,7 @@ describe('BoardController', () => {
 
     it('should return 403 if user is not owner', async () => {
       mockRequest.params = { id: 'board-1' };
-      vi.mocked(boardService.deleteBoard).mockRejectedValue(new Error('Only owners can delete boards'));
+      vi.mocked(boardService.deleteBoard).mockRejectedValue(new ForbiddenError('Only owners can delete boards'));
 
       await boardController.deleteBoard(mockRequest as Request, mockResponse as Response);
 
@@ -279,7 +281,7 @@ describe('BoardController', () => {
 
     it('should return 404 if board not found', async () => {
       mockRequest.params = { id: 'board-1' };
-      vi.mocked(boardService.deleteBoard).mockRejectedValue(new Error('Board not found or access denied'));
+      vi.mocked(boardService.deleteBoard).mockRejectedValue(new NotFoundError('Board not found or access denied'));
 
       await boardController.deleteBoard(mockRequest as Request, mockResponse as Response);
 
