@@ -3,6 +3,7 @@ import { MembershipController } from '../../src/controllers/membership.controlle
 import { membershipService } from '../../src/services/membership.service';
 import { Request, Response } from 'express';
 import { NotFoundError, ForbiddenError, ConflictError } from '../../src/errors';
+import { Role } from '../../generated/prisma';
 
 // Mock membership service
 vi.mock('../../src/services/membership.service', () => ({
@@ -54,7 +55,7 @@ describe('MembershipController', () => {
           id: 'membership-1',
           userId: 'user-1',
           boardId: 'board-1',
-          role: 'OWNER',
+          role: Role.OWNER,
           joinedAt: '2024-01-01T00:00:00.000Z',
           user: { id: 'user-1', email: 'owner@test.com', name: 'Owner', createdAt: '2024-01-01T00:00:00.000Z' },
         },
@@ -62,7 +63,7 @@ describe('MembershipController', () => {
           id: 'membership-2',
           userId: 'user-2',
           boardId: 'board-1',
-          role: 'MEMBER',
+          role: Role.MEMBER,
           joinedAt: '2024-01-02T00:00:00.000Z',
           user: { id: 'user-2', email: 'member@test.com', name: 'Member', createdAt: '2024-01-02T00:00:00.000Z' },
         },
@@ -106,7 +107,7 @@ describe('MembershipController', () => {
         id: 'membership-2',
         userId: 'user-2',
         boardId: 'board-1',
-        role: 'MEMBER',
+        role: Role.MEMBER,
         joinedAt: '2024-01-10T00:00:00.000Z',
         user: { id: 'user-2', email: 'new@test.com', name: 'New User', createdAt: '2024-01-10T00:00:00.000Z' },
       };
@@ -127,7 +128,7 @@ describe('MembershipController', () => {
         id: 'membership-2',
         userId: 'user-2',
         boardId: 'board-1',
-        role: 'MEMBER',
+        role: Role.MEMBER,
         joinedAt: '2024-01-10T00:00:00.000Z',
         user: { id: 'user-2', email: 'new@test.com', name: 'New User', createdAt: '2024-01-10T00:00:00.000Z' },
       };
@@ -196,7 +197,7 @@ describe('MembershipController', () => {
         id: 'membership-2',
         userId: 'user-2',
         boardId: 'board-1',
-        role: 'MAINTAINER',
+        role: Role.MAINTAINER,
         joinedAt: '2024-01-10T00:00:00.000Z',
         user: { id: 'user-2', email: 'user@test.com', name: 'User', createdAt: '2024-01-10T00:00:00.000Z' },
       };
