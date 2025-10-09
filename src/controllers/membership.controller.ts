@@ -21,7 +21,9 @@ export class MembershipController {
       const members = await membershipService.getBoardMembers(boardId, userId);
       return res.json(members);
     } catch (error) {
-      console.error('Error fetching board members:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error fetching board members:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -56,7 +58,9 @@ export class MembershipController {
       const member = await membershipService.addMember(boardId, userId, targetUserId, memberRole);
       return res.status(201).json(member);
     } catch (error) {
-      console.error('Error adding member:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error adding member:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -86,7 +90,9 @@ export class MembershipController {
       const member = await membershipService.updateMemberRole(boardId, currentUserId, targetUserId, role);
       return res.json(member);
     } catch (error) {
-      console.error('Error updating member role:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error updating member role:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -109,7 +115,9 @@ export class MembershipController {
       await membershipService.removeMember(boardId, currentUserId, targetUserId);
       return res.status(204).send();
     } catch (error) {
-      console.error('Error removing member:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error removing member:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -132,7 +140,9 @@ export class MembershipController {
       const users = await membershipService.searchUsers(query, userId, limit);
       return res.json(users);
     } catch (error) {
-      console.error('Error searching users:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error searching users:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }

@@ -37,7 +37,9 @@ export function mapError(error: unknown): HttpErrorResponse {
   }
 
   // Default internal error
-  console.error('Unexpected error:', error);
+  if (process.env.NODE_ENV !== 'test') {
+    console.error('Unexpected error:', error);
+  }
   return {
     status: 500,
     body: { error: 'Internal server error' }

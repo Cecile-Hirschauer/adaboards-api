@@ -19,7 +19,9 @@ export class BoardController {
       const boards = await boardService.getUserBoards(userId);
       return res.json(boards);
     } catch (error) {
-      console.error('Error fetching boards:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error fetching boards:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -41,7 +43,9 @@ export class BoardController {
       const board = await boardService.getBoard(boardId, userId);
       return res.json(board);
     } catch (error) {
-      console.error('Error fetching board:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error fetching board:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -67,7 +71,9 @@ export class BoardController {
       const board = await boardService.createBoard(name.trim(), userId);
       return res.status(201).json(board);
     } catch (error) {
-      console.error('Error creating board:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error creating board:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -94,7 +100,9 @@ export class BoardController {
       const board = await boardService.updateBoard(boardId, userId, { name: name.trim() });
       return res.json(board);
     } catch (error) {
-      console.error('Error updating board:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error updating board:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -116,7 +124,9 @@ export class BoardController {
       await boardService.deleteBoard(boardId, userId);
       return res.status(204).send();
     } catch (error) {
-      console.error('Error deleting board:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error deleting board:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }

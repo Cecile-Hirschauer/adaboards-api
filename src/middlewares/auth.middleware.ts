@@ -7,7 +7,9 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
 
     if (!token) {
-      console.error('[Auth] No token provided');
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('[Auth] No token provided');
+      }
       res.status(401).json({ error: 'Access token required' });
       return;
     }
@@ -16,7 +18,9 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     req.user = payload;
     next();
   } catch (error) {
-    console.error('[Auth] Token verification failed:', error instanceof Error ? error.message : error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.error('[Auth] Token verification failed:', error instanceof Error ? error.message : error);
+    }
     res.status(403).json({ error: 'Invalid or expired token' });
   }
 };

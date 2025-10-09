@@ -21,7 +21,9 @@ export class TaskController {
       const tasks = await taskService.getBoardTasks(boardId, userId);
       return res.json(tasks);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error fetching tasks:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -60,7 +62,9 @@ export class TaskController {
 
       return res.status(201).json(task);
     } catch (error) {
-      console.error('Error creating task:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error creating task:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -99,7 +103,9 @@ export class TaskController {
       const task = await taskService.updateTask(boardId, taskId, userId, updateData);
       return res.json(task);
     } catch (error) {
-      console.error('Error updating task:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error updating task:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
@@ -121,7 +127,9 @@ export class TaskController {
       await taskService.deleteTask(boardId, taskId, userId);
       return res.status(204).send();
     } catch (error) {
-      console.error('Error deleting task:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error deleting task:', error);
+      }
       const { status, body } = mapError(error);
       return res.status(status).json(body);
     }
